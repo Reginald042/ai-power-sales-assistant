@@ -1,4 +1,4 @@
-## AI-Powred Sales Assistant (n8n)
+## AI-Powered Sales Assistant (n8n)
 ## Overview
 This project consists of two independent n8n workflows power this AI Sales Assistant. The first captures customer inquiries through a webhook, uses a Groq-powered AI Agent to generate responses, and logs leads to Google Sheets. The second monitors Gmail replies, maintains conversation memory, and automates personalized follow-up communication.
 ## Features
