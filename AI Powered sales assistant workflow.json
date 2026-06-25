@@ -1,0 +1,458 @@
+{
+  "name": "1st AI agent workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "1d159e27-a501-4cb5-882e-0cf8bb729566",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "94c80ed5-f5a2-46d3-855b-2064e825a61c",
+      "name": "Webhook",
+      "webhookId": "1d159e27-a501-4cb5-882e-0cf8bb729566"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "70398174-80b8-4672-9254-f4f7effdd251",
+              "name": "Name",
+              "value": "={{ $json.body.data.fields[0].value }}",
+              "type": "string"
+            },
+            {
+              "id": "196103a7-71a6-475d-b691-5d2a163d5d23",
+              "name": "Email",
+              "value": "={{ $json.body.data.fields[1].value }}",
+              "type": "string"
+            },
+            {
+              "id": "bae1ec05-67c5-4e26-ba71-ab10be132f8a",
+              "name": "Phone",
+              "value": "={{ $json.body.data.fields[2].value }}",
+              "type": "string"
+            },
+            {
+              "id": "04b4e0f8-a4d8-42f5-85a7-7e0f84cea121",
+              "name": "Business",
+              "value": "={{ $json.body.data.fields[3].value }}",
+              "type": "string"
+            },
+            {
+              "id": "2dea1757-64ed-42b8-b23a-4f033fef4e61",
+              "name": "Service",
+              "value": "={{ $json.body.data.fields[4].value }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        176,
+        0
+      ],
+      "id": "738ddcd1-d103-497c-8e1b-7e508f62bb42",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.Name }}\n{{ $json.Service }}",
+        "options": {
+          "systemMessage": "You are a sale assistant\n\nYou have access to a Product Catalog tool.\n\nThe Product Catalog tool contains product names, stock information, and prices.\nWhenever a question asked, refer to the product catalog. don't generate answers on your own.\n\nWhen a customer asks about:\n- Price\n- Pricing\n- Cost\n- Amount\n- How much\n- Product availability\n- Inventory\n\nYou MUST use the Product Catalog tool before responding.\n\nNever make up prices.\n\nAlways use the Product Catalog tool to retrieve the latest pricing information.\n\nIf the product is not found, politely inform the customer.\n\nDo not mention internal tools or databases."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        384,
+        0
+      ],
+      "id": "9a049d1f-d76f-4720-86a9-0dd121c00470",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1_OH0HubQal99ExfPBZ7wG3jOtapBRvoZC1uta9DsArs",
+          "mode": "list",
+          "cachedResultName": "Product Catalog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_OH0HubQal99ExfPBZ7wG3jOtapBRvoZC1uta9DsArs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_OH0HubQal99ExfPBZ7wG3jOtapBRvoZC1uta9DsArs/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        608,
+        160
+      ],
+      "id": "4e82b117-f12d-4bcc-9d1b-515b7b5101df",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "XqmRyOaXKyPpUn33",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Edit Fields').item.json.Email }}",
+        "subject": "Hello",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        736,
+        0
+      ],
+      "id": "faaf46e5-5e17-460c-ab8c-86c120661259",
+      "name": "Send a message",
+      "webhookId": "7beecedd-2046-4ec4-b3ba-ef745aee8889",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "wUXi1oJBy435HB0t",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        304,
+        160
+      ],
+      "id": "d3db1660-9f28-4f50-aada-926fccf7b252",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "x4jzlHvgYe3fuWmE",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1RZiJZSVc6rla5l7Vk9mPn0kaqk8pq7kc8zWx80HOrHs",
+          "mode": "list",
+          "cachedResultName": "customer database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RZiJZSVc6rla5l7Vk9mPn0kaqk8pq7kc8zWx80HOrHs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RZiJZSVc6rla5l7Vk9mPn0kaqk8pq7kc8zWx80HOrHs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{ $now  }}",
+            "name": "={{ $('Edit Fields').item.json.Name }}",
+            "email": "={{ $('Edit Fields').item.json.Email }}",
+            "phone": "={{ $('Edit Fields').item.json.Phone }}",
+            "business": "={{ $('Edit Fields').item.json.Business }}",
+            "message": "={{ $('Edit Fields').item.json.Service }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "business",
+              "displayName": "business",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        944,
+        0
+      ],
+      "id": "e42b5e2f-14ce-4762-89dc-9148360eeddd",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "XqmRyOaXKyPpUn33",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Edit Fields').item.json.Email }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        464,
+        208
+      ],
+      "id": "d62c339a-9b9d-4610-afd3-932c337782b7",
+      "name": "Simple Memory"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "reginald042.app.n8n.cloud",
+            "user-agent": "Tally Webhooks",
+            "content-length": "1431",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, br",
+            "baggage": "sentry-environment=production,sentry-release=07ec56aee3d9b4c60adba606e122ca295bf56bba,sentry-public_key=6af4b6673f1648edaa8fef3f2ca43405,sentry-trace_id=f1fe7cc1781125800963ab019ab64dd7,sentry-org_id=407628,sentry-sampled=false,sentry-sample_rand=0.2366512637827488,sentry-sample_rate=0",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.96.41.174",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "BE",
+            "cf-ray": "a10ed4323aed63a8-LHR",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "sentry-trace": "f1fe7cc1781125800963ab019ab64dd7-07786e432d8be4a5-0",
+            "x-forwarded-for": "34.96.41.174, 172.69.195.150",
+            "x-forwarded-host": "reginald042.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-swc-17-7b8c95767-mjlkk",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.96.41.174"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "eventId": "fc6f5b74-14db-4acd-92fa-d8414894c09e",
+            "eventType": "FORM_RESPONSE",
+            "createdAt": "2026-06-24T21:29:36.284Z",
+            "data": {
+              "responseId": "vX4k4W4",
+              "submissionId": "vX4k4W4",
+              "respondentId": "9q4Wb8G",
+              "formId": "7Rjqp2",
+              "formName": "N8N tutor",
+              "createdAt": "2026-06-24T21:29:36.000Z",
+              "submissionPdfUrl": "https://api.tally.so/forms/7Rjqp2/submissions/vX4k4W4/pdf?accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWJtaXNzaW9uSWQiOiJ2WDRrNFc0IiwiZm9ybUlkIjoiN1JqcXAyIiwiaWF0IjoxNzgyMzM2NTc2fQ.fgCYdUO5vO2flwDIPiiYUrLoevs5nXSIfMB1mypLIQo&signature=c9b89f2c9cd6ca502cd4cdd60fc5ad59b8f91112db86c97daf7b2c8e45676a57",
+              "submissionPreviewUrl": "https://tally.so/forms/7Rjqp2/submissions/vX4k4W4/preview?accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWJtaXNzaW9uSWQiOiJ2WDRrNFc0IiwiZm9ybUlkIjoiN1JqcXAyIiwiaWF0IjoxNzgyMzM2NTc2fQ.fgCYdUO5vO2flwDIPiiYUrLoevs5nXSIfMB1mypLIQo&signature=c9b89f2c9cd6ca502cd4cdd60fc5ad59b8f91112db86c97daf7b2c8e45676a57",
+              "fields": [
+                {
+                  "key": "question_RRL66P",
+                  "label": "NAME:",
+                  "type": "INPUT_TEXT",
+                  "value": "Chidera"
+                },
+                {
+                  "key": "question_ooOaaM",
+                  "label": "EMAIL:",
+                  "type": "INPUT_EMAIL",
+                  "value": "adolfsreggy@gmail.com"
+                },
+                {
+                  "key": "question_qOoRyk",
+                  "label": "PHONE:",
+                  "type": "INPUT_TEXT",
+                  "value": "09065678474"
+                },
+                {
+                  "key": "question_Qdv7Gk",
+                  "label": "BUSINESS:",
+                  "type": "INPUT_TEXT",
+                  "value": "e-commerce"
+                },
+                {
+                  "key": "question_9Op7e4",
+                  "label": "SERVICE:",
+                  "type": "TEXTAREA",
+                  "value": "how many pieces of television do you have available now"
+                }
+              ]
+            }
+          },
+          "webhookUrl": "https://reginald042.app.n8n.cloud/webhook/1d159e27-a501-4cb5-882e-0cf8bb729566",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "c1273eee-f78d-4c63-82f5-9a3bca82fb32",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "489713c2a46151633c71302119ed9e4843dddfc8688a4784a3dafca50f27ed19"
+  },
+  "nodeGroups": [],
+  "id": "x9HwvtVfynlpqQ8e",
+  "tags": []
+}
