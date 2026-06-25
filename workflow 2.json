@@ -1,0 +1,242 @@
+{
+  "name": "workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "63109991-077a-4f82-973e-feeb172fcbde",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "wUXi1oJBy435HB0t",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.From }}\n{{ $json.Subject }}\n{{ $json.snippet }}",
+        "options": {
+          "systemMessage": "You are a helpful assistantYou are a helpful sales assistant.\n\nYou have access to a Product Catalog tool containing product names, prices, and inventory.\n\nAnswer customer questions accurately.\n\nWhen customers ask about products, prices, quantities, stock, availability, or costs, use the Product Catalog tool before responding.\n\nUse the conversation memory to maintain context from previous interactions.\n\nDo not make up product information.\n\nBe concise and professional."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "ba4d84af-2bc5-41b9-bc6b-6e3d71c304a7",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "35f81058-23f2-41b1-a653-e5a627c2dd46",
+      "name": "Get a message",
+      "webhookId": "53f4d527-bef1-4343-9e2b-85adfc0761c6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "wUXi1oJBy435HB0t",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        288,
+        208
+      ],
+      "id": "10c7eb94-7b59-459c-b288-4289ee73930f",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "x4jzlHvgYe3fuWmE",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Get a message').item.json.From }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        432,
+        208
+      ],
+      "id": "033b2d26-7678-4c1d-bfa4-2fe7eb1e1915",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1_OH0HubQal99ExfPBZ7wG3jOtapBRvoZC1uta9DsArs",
+          "mode": "list",
+          "cachedResultName": "Product Catalog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_OH0HubQal99ExfPBZ7wG3jOtapBRvoZC1uta9DsArs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_OH0HubQal99ExfPBZ7wG3jOtapBRvoZC1uta9DsArs/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        576,
+        208
+      ],
+      "id": "5076a13f-cc1c-40af-9906-027bca980d53",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "XqmRyOaXKyPpUn33",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Gmail Trigger').item.json.From }}",
+        "subject": "Hi",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        768,
+        0
+      ],
+      "id": "6bdb0f96-b926-4aea-a18e-523a16a8faba",
+      "name": "Send a message",
+      "webhookId": "88d8f340-45c8-4aa1-b6ab-eb4949ce8386",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "wUXi1oJBy435HB0t",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a message": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "ecb9ff06-6945-4366-a9dc-c2480c66c260",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "489713c2a46151633c71302119ed9e4843dddfc8688a4784a3dafca50f27ed19"
+  },
+  "nodeGroups": [],
+  "id": "ObZY0m8QqMfV6MWO",
+  "tags": []
+}
