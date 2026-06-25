@@ -11,7 +11,7 @@ Automated follow-up responses
 No-code/low-code implementation with n8n
 
 ## Workflow Architecture
-Workflow 1: Lead Capture & Initial Response
+## Workflow 1: Lead Capture & Initial Response
 Webhook → Set Node → AI Agent → Gmail → Google Sheets
 Function:
 Receives customer inquiries via webhook
